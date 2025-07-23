@@ -1,52 +1,52 @@
-name: Daily Stock Fetch and Summary
+name: fetch-and-commit
 
 on:
+  workflow_dispatch:  # ✅ Enables "Run workflow" button
   schedule:
-    - cron: '0 14 * * *'  # every day at 7:30 PM IST
-  workflow_dispatch:      # allows manual trigger
+    - cron: '0 15 * * *'  # ✅ Runs every day at 8:30 PM IST
 
 jobs:
-  fetch-and-commit:
+  fetch:
     runs-on: ubuntu-latest
 
     env:
-      env:
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
-      - name: Checkout Repository
+      - name: ⬇️ Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: 🐍 Set Up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: 📦 Install Dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --upgrade pip
+          pip install yfinance openai pandas
 
-      - name: Run Script
-        run: python fetch_and_commit.py
+      - name: 🚀 Run Stock Fetcher Script
+        run: python fetch_stock_data.py
 
-      - name: Commit CSV Files
+      - name: ✅ Commit Each File Separately
         run: |
-          git config --local user.email "bot@github.com"
-          git config --local user.name "AutoBot"
-          
-          if [[ -n $(git status --porcelain stock/) ]]; then
-            git add stock/
-            git commit -m "📈 Daily stock data for $(date +'%Y-%m-%d')"
-          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-      - name: Commit Markdown Summary
-        run: |
-          if [[ -n $(git status --porcelain summaries/) ]]; then
-            git add summaries/
-            git commit -m "🧾 Stock summary report for $(date +'%Y-%m-%d')"
-          fi
+          for file in stocks/*.csv; do
+            git add "$file"
+            git commit -m "📈 Update: $(basename "$file") - $(date)"
+            git push
+          done
 
-      - name: Push changes
-        run: |
-          git push origin main
+      # Optional: If you want to auto-generate summary blog post
+      # - name: 📝 Generate Daily Summary (Optional)
+      #   run: python generate_summary.py
+
+      # - name: 📤 Commit Blog Post
+      #   run: |
+      #     git add summaries/*
+      #     git commit -m "🧠 Daily Stock Summary - $(date)"
+      #     git push
+
