@@ -1,0 +1,33 @@
+name: Daily Stock Tracker
+
+on:
+  schedule:
+    - cron: "30 4 * * *"  # Runs daily at 10:00 AM IST
+  workflow_dispatch:
+
+jobs:
+  track_stock:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: pip install yfinance pandas
+
+    - name: Run stock tracker script
+      run: python stock_tracker.py
+
+    - name: Commit and push
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add .
+        git commit -m "📈 Daily stock update: $(date '+%Y-%m-%d')" || echo "No changes to commit"
+        git push
