@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_API_KEY: ${{ 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 }}
 
     steps:
       - name: Checkout Repository
